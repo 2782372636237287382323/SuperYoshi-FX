@@ -407,7 +407,7 @@ DangersCursorSettings = {
 }
 BlackCursorSettings = {
 	Enabled = false,
-	Size = 139.7, -- pixeles reales (slider 1 = 110px, slider 100 = 170px; slider 50 = ~140px)
+	Size = 140.5, -- pixeles reales (slider 1 = 16px, slider 100 = 170px; slider 81 = ~140px)
 	DecalId = 93436072068874,
 }
 BushSettings = {
@@ -8839,14 +8839,14 @@ CrosshairTab:AddToggle("BlackCursorEnabled", {
 })
 
 CrosshairTab:AddSlider("BlackCursorSize", {
-	Default = 50,
+	Default = 81,
 	Min = 1,
 	Max = 100,
 	Rounding = 0,
 	Text = "Size",
 	Callback = function(Value)
-		-- El hub muestra 1 a 100, pero internamente va de 110 a 170 pixeles
-		BlackCursorSettings.Size = 110 + ((Value - 1) / 99) * 60
+		-- El hub muestra 1 a 100, pero internamente va de 16 a 170 pixeles
+		BlackCursorSettings.Size = 16 + ((Value - 1) / 99) * 154
 		UpdateBlackCursor()
 	end,
 })
