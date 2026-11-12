@@ -292,7 +292,7 @@ local Settings = {
 				Enabled = false,
 				NotHitColor = Color3.fromRGB(255, 0, 0),
 				HitColor = Color3.fromRGB(34, 255, 0),
-				WhenToHit = 0.6,
+				WhenToHit = 0.5,
 				SmoothMode = true,
 				UpdateRate = 0.014,
 				SoundEnabled = false,
@@ -395,7 +395,7 @@ CameraSettings = {
 
 CrosshairSettings = {
 	Enabled = false,
-	Size = 60.1, -- pixeles reales (slider 1 = 16px, slider 100 = 128px; slider 40 = ~60px)
+	Size = 49, -- pixeles reales (slider 1 = 16px, slider 100 = 49px; slider 100 = 49px)
 	OffsetX = 0, -- + derecha, - izquierda
 	OffsetY = -6, -- - sube, + baja
 	DecalId = 77877446296275,
@@ -407,7 +407,7 @@ DangersCursorSettings = {
 }
 BlackCursorSettings = {
 	Enabled = false,
-	Size = 140.5, -- pixeles reales (slider 1 = 16px, slider 100 = 170px; slider 81 = ~140px)
+	Size = 49.3, -- pixeles reales (slider 1 = 16px, slider 100 = 53px; slider 90 = ~49px)
 	DecalId = 93436072068874,
 }
 BushSettings = {
@@ -543,16 +543,18 @@ RankData = {
 	["Cruzy"] = { Color = "#FF9900", Icon = "rbxassetid://136173586615424" },
 	["Kiyam"] = { Color = "#00D5FF", Icon = "rbxassetid://135601954048658" },
 	["Relative"] = { Color = "#FF5E00", Icon = "rbxassetid://72807915177915" },
+	["Corksuable"] = { Color = "#A8FF3D", Icon = "rbxassetid://135738630748193" },
 	["Brent"] = { Color = "#FFD700", Icon = "rbxassetid://93649728520449" },
 	["Danger"] = { Color = "#FF2D2D", Icon = "rbxassetid://132454521998375" },
 	["Brokensfr"] = { Color = "#B84DFF", Icon = "rbxassetid://70443396654057" },
 	["Noschillies"] = { Color = "#3DDC84", Icon = "rbxassetid://138013853842250" },
+	["Pilot"] = { Color = "#4DA6FF", Icon = "rbxassetid://97732004736329" },
 	["Rashad"] = { Color = "#FF6EC7", Icon = "rbxassetid://104136290091936" },
 }
 
 RankList = { "None", "VIP", "LEAD DEV", "MAN", "DEV", "QA", "MOD", "CON" }
 -- Solo para "Your Rank Tag": los 3 nuevos aparecen justo debajo de None
-MyRankList = { "None", "Cruzy", "Kiyam", "Relative", "Brent", "Danger", "Brokensfr", "Noschillies", "Rashad", "VIP", "LEAD DEV", "MAN", "DEV", "QA", "MOD", "CON" }
+MyRankList = { "None", "Cruzy", "Kiyam", "Relative", "Corksuable", "Brent", "Danger", "Brokensfr", "Noschillies", "Pilot", "Rashad", "VIP", "LEAD DEV", "MAN", "DEV", "QA", "MOD", "CON" }
 
 ThreeDESPObjects = {}
 
@@ -2439,64 +2441,121 @@ function Update3DBox(lines, Character)
 		return
 	end
 
-	local corners = Get3DBoxCorners(Character)
-	if not corners then
+	local hrp = Character:FindFirstChild("HumanoidRootPart")
+	if not hrp then
 		for _, line in ipairs(lines) do
 			line.Visible = false
 		end
 		return
 	end
 
-	local screenCorners = ProjectCornersToScreen(corners)
-	if not screenCorners then
-		for _, line in ipairs(lines) do
-			line.Visible = false
-		end
+	local size = Character:GetExtentsSize()
+	local cf = hrp.CFrame
+	local hx, hy, hz = size.X / 2, size.Y / 2, size.Z / 2
+
+	-- Mismas 8 esquinas y mismo orden que antes (Get3DBoxCorners + ProjectCornersToScreen),
+	-- pero sin crear tablas ni CFrames temporales cada frame.
+	local p, on = cam:WorldToViewportPoint(cf * Vector3.new(-hx, -hy, -hz))
+	if not on or p.Z < 0 then
+		for _, line in ipairs(lines) do line.Visible = false end
 		return
 	end
+	local s1 = Vector2.new(p.X, p.Y)
+
+	p, on = cam:WorldToViewportPoint(cf * Vector3.new(hx, -hy, -hz))
+	if not on or p.Z < 0 then
+		for _, line in ipairs(lines) do line.Visible = false end
+		return
+	end
+	local s2 = Vector2.new(p.X, p.Y)
+
+	p, on = cam:WorldToViewportPoint(cf * Vector3.new(hx, hy, -hz))
+	if not on or p.Z < 0 then
+		for _, line in ipairs(lines) do line.Visible = false end
+		return
+	end
+	local s3 = Vector2.new(p.X, p.Y)
+
+	p, on = cam:WorldToViewportPoint(cf * Vector3.new(-hx, hy, -hz))
+	if not on or p.Z < 0 then
+		for _, line in ipairs(lines) do line.Visible = false end
+		return
+	end
+	local s4 = Vector2.new(p.X, p.Y)
+
+	p, on = cam:WorldToViewportPoint(cf * Vector3.new(-hx, -hy, hz))
+	if not on or p.Z < 0 then
+		for _, line in ipairs(lines) do line.Visible = false end
+		return
+	end
+	local s5 = Vector2.new(p.X, p.Y)
+
+	p, on = cam:WorldToViewportPoint(cf * Vector3.new(hx, -hy, hz))
+	if not on or p.Z < 0 then
+		for _, line in ipairs(lines) do line.Visible = false end
+		return
+	end
+	local s6 = Vector2.new(p.X, p.Y)
+
+	p, on = cam:WorldToViewportPoint(cf * Vector3.new(hx, hy, hz))
+	if not on or p.Z < 0 then
+		for _, line in ipairs(lines) do line.Visible = false end
+		return
+	end
+	local s7 = Vector2.new(p.X, p.Y)
+
+	p, on = cam:WorldToViewportPoint(cf * Vector3.new(-hx, hy, hz))
+	if not on or p.Z < 0 then
+		for _, line in ipairs(lines) do line.Visible = false end
+		return
+	end
+	local s8 = Vector2.new(p.X, p.Y)
 
 	local color = Get3DBoxColor(Character)
 
-	lines[1].From = screenCorners[1]
-	lines[1].To = screenCorners[2]
+	lines[1].From = s1
+	lines[1].To = s2
 
-	lines[2].From = screenCorners[2]
-	lines[2].To = screenCorners[3]
+	lines[2].From = s2
+	lines[2].To = s3
 
-	lines[3].From = screenCorners[3]
-	lines[3].To = screenCorners[4]
+	lines[3].From = s3
+	lines[3].To = s4
 
-	lines[4].From = screenCorners[4]
-	lines[4].To = screenCorners[1]
+	lines[4].From = s4
+	lines[4].To = s1
 
-	lines[5].From = screenCorners[5]
-	lines[5].To = screenCorners[6]
+	lines[5].From = s5
+	lines[5].To = s6
 
-	lines[6].From = screenCorners[6]
-	lines[6].To = screenCorners[7]
+	lines[6].From = s6
+	lines[6].To = s7
 
-	lines[7].From = screenCorners[7]
-	lines[7].To = screenCorners[8]
+	lines[7].From = s7
+	lines[7].To = s8
 
-	lines[8].From = screenCorners[8]
-	lines[8].To = screenCorners[5]
+	lines[8].From = s8
+	lines[8].To = s5
 
-	lines[9].From = screenCorners[1]
-	lines[9].To = screenCorners[5]
+	lines[9].From = s1
+	lines[9].To = s5
 
-	lines[10].From = screenCorners[2]
-	lines[10].To = screenCorners[6]
+	lines[10].From = s2
+	lines[10].To = s6
 
-	lines[11].From = screenCorners[3]
-	lines[11].To = screenCorners[7]
+	lines[11].From = s3
+	lines[11].To = s7
 
-	lines[12].From = screenCorners[4]
-	lines[12].To = screenCorners[8]
+	lines[12].From = s4
+	lines[12].To = s8
 
+	local boxSets = Settings.EspSettings.PlayerEsp.BoxEsp
+	local thickness = boxSets.Thickness
+	local transparency = boxSets.Transparency
 	for _, line in ipairs(lines) do
 		line.Color = color
-		line.Thickness = Settings.EspSettings.PlayerEsp.BoxEsp.Thickness
-		line.Transparency = Settings.EspSettings.PlayerEsp.BoxEsp.Transparency
+		line.Thickness = thickness
+		line.Transparency = transparency
 		line.Visible = true
 	end
 end
@@ -3021,6 +3080,12 @@ function createSkeletonUI(character)
 
 	local skParts, skLastScan = nil, 0
 
+	-- Las llaves de las lineas se arman una sola vez (antes se concatenaban strings en cada frame)
+	local jointData = {}
+	for _, joint in pairs(joints) do
+		jointData[#jointData + 1] = { joint[1], joint[2], lines[joint[1] .. "_" .. joint[2]] }
+	end
+
 	SkeletonConnections[character] = RunService.RenderStepped:Connect(function()
 		if not character or not character.Parent or not character:FindFirstChild("HumanoidRootPart") then
 			return
@@ -3034,10 +3099,11 @@ function createSkeletonUI(character)
 		end
 		local parts = skParts
 
-		for _, joint in pairs(joints) do
-			local p1 = parts[joint[1]]
-			local p2 = parts[joint[2]]
-			local line = lines[joint[1] .. "_" .. joint[2]]
+		for i = 1, #jointData do
+			local jd = jointData[i]
+			local p1 = parts[jd[1]]
+			local p2 = parts[jd[2]]
+			local line = jd[3]
 
 			if p1 and p2 and line then
 				local pos1, onScreen1 = cam:WorldToViewportPoint(p1.Position)
@@ -3139,23 +3205,38 @@ function createBoxUI(character)
 		local allOnScreen = true
 
 		for _, part in pairs(parts) do
-			local pos, onScreen = cam:WorldToViewportPoint(part.Position)
+			local cf = part.CFrame
+			local pos, onScreen = cam:WorldToViewportPoint(cf.Position)
 			if onScreen and pos.Z > 0 then
 				local size = part.Size
-				local corners = {
-					part.CFrame * CFrame.new(size.X / 2, size.Y / 2, 0),
-					part.CFrame * CFrame.new(-size.X / 2, size.Y / 2, 0),
-					part.CFrame * CFrame.new(size.X / 2, -size.Y / 2, 0),
-					part.CFrame * CFrame.new(-size.X / 2, -size.Y / 2, 0),
-				}
+				local hx, hy = size.X / 2, size.Y / 2
 
-				for _, corner in pairs(corners) do
-					local cornerPos = cam:WorldToViewportPoint(corner.Position)
-					minX = math.min(minX, cornerPos.X)
-					minY = math.min(minY, cornerPos.Y)
-					maxX = math.max(maxX, cornerPos.X)
-					maxY = math.max(maxY, cornerPos.Y)
-				end
+				-- mismas 4 esquinas de antes, sin crear tablas ni CFrames nuevos
+				local c1 = cam:WorldToViewportPoint(cf * Vector3.new(hx, hy, 0))
+				local c2 = cam:WorldToViewportPoint(cf * Vector3.new(-hx, hy, 0))
+				local c3 = cam:WorldToViewportPoint(cf * Vector3.new(hx, -hy, 0))
+				local c4 = cam:WorldToViewportPoint(cf * Vector3.new(-hx, -hy, 0))
+
+				local x1, x2, x3, x4 = c1.X, c2.X, c3.X, c4.X
+				local y1, y2, y3, y4 = c1.Y, c2.Y, c3.Y, c4.Y
+
+				if x1 < minX then minX = x1 end
+				if x2 < minX then minX = x2 end
+				if x3 < minX then minX = x3 end
+				if x4 < minX then minX = x4 end
+				if y1 < minY then minY = y1 end
+				if y2 < minY then minY = y2 end
+				if y3 < minY then minY = y3 end
+				if y4 < minY then minY = y4 end
+
+				if x1 > maxX then maxX = x1 end
+				if x2 > maxX then maxX = x2 end
+				if x3 > maxX then maxX = x3 end
+				if x4 > maxX then maxX = x4 end
+				if y1 > maxY then maxY = y1 end
+				if y2 > maxY then maxY = y2 end
+				if y3 > maxY then maxY = y3 end
+				if y4 > maxY then maxY = y4 end
 			else
 				allOnScreen = false
 			end
@@ -6980,7 +7061,7 @@ MyNameTab:AddInput("MyAvatarTarget", {
 	Text = "Username or UserID",
 })
 
-MyNameTab:AddButton("Apply Avatar to Myself", function()
+MyNameTab:AddButton("Apply Avatar", function()
 	local target = Options.MyAvatarTarget.Value
 	if target and target ~= "" then
 		applyavatar(player.Name, target)
@@ -8786,7 +8867,7 @@ end
 local CrosshairTab = Tabs.Crosshair:AddLeftTabbox("Crosshair Settings"):AddTab("Crosshair Settings")
 
 CrosshairTab:AddToggle("CrosshairEnabled", {
-	Text = "Enable Crosshair",
+	Text = "Normal cursor",
 	Default = false,
 	Callback = function(Value)
 		CrosshairSettings.Enabled = Value
@@ -8795,14 +8876,14 @@ CrosshairTab:AddToggle("CrosshairEnabled", {
 })
 
 CrosshairTab:AddSlider("CursorSize", {
-	Default = 40,
+	Default = 100,
 	Min = 1,
 	Max = 100,
 	Rounding = 0,
 	Text = "Size",
 	Callback = function(Value)
-		-- El hub muestra 1 a 100, pero internamente va de 16 a 128 pixeles
-		CrosshairSettings.Size = 16 + ((Value - 1) / 99) * 112
+		-- El hub muestra 1 a 100, pero internamente va de 16 a 49 pixeles
+		CrosshairSettings.Size = 16 + ((Value - 1) / 99) * 33
 		UpdateCrosshair()
 	end,
 })
@@ -8839,14 +8920,14 @@ CrosshairTab:AddToggle("BlackCursorEnabled", {
 })
 
 CrosshairTab:AddSlider("BlackCursorSize", {
-	Default = 81,
+	Default = 90,
 	Min = 1,
 	Max = 100,
 	Rounding = 0,
 	Text = "Size",
 	Callback = function(Value)
-		-- El hub muestra 1 a 100, pero internamente va de 16 a 170 pixeles
-		BlackCursorSettings.Size = 16 + ((Value - 1) / 99) * 154
+		-- El hub muestra 1 a 100, pero internamente va de 16 a 53 pixeles
+		BlackCursorSettings.Size = 16 + ((Value - 1) / 99) * 37
 		UpdateBlackCursor()
 	end,
 })
@@ -9856,8 +9937,10 @@ end
 -- ============================================================
 XboxMode = {
 	Enabled = false,
-	ScanEvery = 3,
+	ScanEvery = 4,
 	Token = 0,
+	Desired = false,
+	ApplyToken = 0,
 	Bars = {
 		BeastPowerBar = Enum.KeyCode.ButtonY,
 		RunnerButton = Enum.KeyCode.ButtonY,
@@ -9865,7 +9948,7 @@ XboxMode = {
 	MenuBars = { "RoundBar" },
 	ShiftX = -80,
 	ShiftY = 0,
-	HideTopIcons = true,
+	HideChat = true,
 	KeyMap = { Q = "Y" },
 	Imgs = setmetatable({}, { __mode = "k" }),
 	Texts = setmetatable({}, { __mode = "k" }),
@@ -9873,6 +9956,9 @@ XboxMode = {
 	BarCache = {},
 	GlyphCache = {},
 	WeHid = false,
+	HidTop = false,
+	TopInner = nil,
+	TopConn = nil,
 	DescConn = nil,
 }
 
@@ -10018,8 +10104,10 @@ function XboxMode_GetBar(name)
 	return bar
 end
 
-function XboxMode_SetTopIcons(hide)
+function XboxMode_SetChat(hide)
+	-- Oculta el chat y los iconos de arriba de Roblox (logo de Roblox, las tres rayas y el icono del chat)
 	local StarterGui = game:GetService("StarterGui")
+	local TCS = game:GetService("TextChatService")
 	if hide then
 		if not XboxMode.WeHid then
 			XboxMode.WeHid = true
@@ -10028,34 +10116,69 @@ function XboxMode_SetTopIcons(hide)
 			end)
 		end
 		pcall(function()
+			local win = TCS:FindFirstChild("ChatWindowConfiguration")
+			if win and win.Enabled then
+				win.Enabled = false
+			end
+			local input = TCS:FindFirstChild("ChatInputBarConfiguration")
+			if input and input.Enabled then
+				input.Enabled = false
+			end
+		end)
+		pcall(function()
 			local outer = CoreGui:FindFirstChild("TopBarApp")
 			local inner = outer and outer:FindFirstChild("TopBarApp")
-			if inner and inner.Enabled then
-				inner.Enabled = false
+			if inner then
+				if inner.Enabled then
+					XboxMode.HidTop = true
+					inner.Enabled = false
+				end
+				-- Si Roblox la vuelve a prender, se apaga al instante (por evento, sin loops)
+				if XboxMode.TopInner ~= inner then
+					if XboxMode.TopConn then
+						XboxMode.TopConn:Disconnect()
+					end
+					XboxMode.TopInner = inner
+					XboxMode.TopConn = inner:GetPropertyChangedSignal("Enabled"):Connect(function()
+						if XboxMode and XboxMode.Enabled and XboxMode.HideChat and inner.Enabled then
+							inner.Enabled = false
+						end
+					end)
+				end
 			end
 		end)
 	elseif XboxMode.WeHid then
 		XboxMode.WeHid = false
-		-- Si Hide Chat sigue ocultando el chat, no lo volvemos a mostrar
-		if ChatHider and ChatHider.Enabled and ChatHider.Hidden then
-			return
+		if XboxMode.TopConn then
+			XboxMode.TopConn:Disconnect()
+			XboxMode.TopConn = nil
 		end
+		if XboxMode.HidTop and XboxMode.TopInner then
+			pcall(function()
+				XboxMode.TopInner.Enabled = true
+			end)
+		end
+		XboxMode.HidTop = false
+		XboxMode.TopInner = nil
 		pcall(function()
 			StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Chat, true)
 		end)
 		pcall(function()
-			local outer = CoreGui:FindFirstChild("TopBarApp")
-			local inner = outer and outer:FindFirstChild("TopBarApp")
-			if inner and not inner.Enabled then
-				inner.Enabled = true
+			local win = TCS:FindFirstChild("ChatWindowConfiguration")
+			if win then
+				win.Enabled = true
+			end
+			local input = TCS:FindFirstChild("ChatInputBarConfiguration")
+			if input then
+				input.Enabled = true
 			end
 		end)
 	end
 end
 
 function XboxMode_Scan()
-	if XboxMode.HideTopIcons then
-		XboxMode_SetTopIcons(true)
+	if XboxMode.HideChat then
+		XboxMode_SetChat(true)
 	end
 
 	for _, name in ipairs(XboxMode.MenuBars) do
@@ -10072,11 +10195,37 @@ function XboxMode_Scan()
 		end
 	end
 
+	-- Se revisa en tandas y se cede el frame para no hacer picos de lag
+	local token = XboxMode.Token
+	local count = 0
 	for _, d in ipairs(playergui:GetDescendants()) do
 		if (d:IsA("TextLabel") or d:IsA("TextButton")) and not XboxMode.Texts[d] then
 			XboxMode_WatchText(d)
 		end
+		count = count + 1
+		if count % 120 == 0 then
+			task.wait()
+			if not XboxMode or not XboxMode.Enabled or XboxMode.Token ~= token then
+				return
+			end
+		end
 	end
+end
+
+function XboxMode_RequestState(value)
+	XboxMode.Desired = value
+	XboxMode.ApplyToken = XboxMode.ApplyToken + 1
+	local t = XboxMode.ApplyToken
+	task.delay(0.35, function()
+		if not XboxMode or t ~= XboxMode.ApplyToken then
+			return
+		end
+		if XboxMode.Desired then
+			StartXboxMode()
+		else
+			StopXboxMode()
+		end
+	end)
 end
 
 function StartXboxMode()
@@ -10103,7 +10252,6 @@ function StartXboxMode()
 			end)
 		end
 	end)
-	ConnectionManager:AddGlobal("XboxModeDescAdded", XboxMode.DescConn)
 
 	task.spawn(function()
 		while XboxMode.Enabled and XboxMode.Token == token do
@@ -10114,6 +10262,9 @@ function StartXboxMode()
 end
 
 function StopXboxMode()
+	if not XboxMode.Enabled then
+		return
+	end
 	XboxMode.Enabled = false
 	XboxMode.Token = XboxMode.Token + 1
 	if XboxMode.DescConn then
@@ -10152,7 +10303,7 @@ function StopXboxMode()
 	end
 
 	pcall(XboxMode_RestoreBars)
-	XboxMode_SetTopIcons(false)
+	XboxMode_SetChat(false)
 end
 
 GeneralCustomizationLeft = Tabs["General Customization"]:AddLeftTabbox("Fonts"):AddTab("Fonts")
@@ -10214,83 +10365,13 @@ GeneralCustomizationLeft:AddDropdown("FontSelection", {
 GeneralCustomizationRight = Tabs["General Customization"]:AddRightTabbox("Gamma"):AddTab("Gamma")
 
 GeneralCustomizationLeft:AddDivider()
-GeneralCustomizationLeft:AddLabel("Hide Chat")
-
--- Hide Chat: sin bucles ni conexiones por frame. Solo cambia el CoreGui del chat y la barra superior
--- cuando se activa el toggle o se presiona la keybind, asi que no afecta los FPS.
-ChatHider = { Enabled = false, Hidden = false }
-
-function ChatHider.Apply(visible)
-	ChatHider.Hidden = not visible
-	local StarterGui = game:GetService("StarterGui")
-	pcall(function()
-		StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Chat, visible)
-	end)
-	-- Chat nuevo (TextChatService): ventana y barra de escribir. Solo se cambia al activar/desactivar, sin loops.
-	pcall(function()
-		local TCS = game:GetService("TextChatService")
-		local win = TCS:FindFirstChild("ChatWindowConfiguration")
-		if win then
-			win.Enabled = visible
-		end
-		local input = TCS:FindFirstChild("ChatInputBarConfiguration")
-		if input then
-			input.Enabled = visible
-		end
-	end)
-	-- Barra superior (icono de Roblox, 3 rayas, icono del chat): se oculta el ScreenGui
-	-- TopBarApp del CoreGui, igual que en el script original. Sin bucles.
-	task.spawn(function()
-		pcall(function()
-			local outer = CoreGui:WaitForChild("TopBarApp", 3)
-			local inner = outer and outer:WaitForChild("TopBarApp", 3)
-			if inner then
-				inner.Enabled = visible
-			end
-		end)
-	end)
-end
-
-GeneralCustomizationLeft:AddToggle("EnableChatHider", {
-	Text = "Enable Hide Chat",
-	Default = false,
-	Callback = function(Value)
-		ChatHider.Enabled = Value
-		if Value then
-			ChatHider.Apply(false)
-		else
-			ChatHider.Apply(true)
-		end
-	end,
-})
-
-GeneralCustomizationLeft:AddLabel("Chat Toggle Key"):AddKeyPicker("ChatHiderKey", {
-	Default = "None",
-	SyncToggleState = false,
-	Mode = "Toggle",
-	Text = "Chat Toggle Key",
-	NoUI = false,
-})
-
-BindOptionKey("ChatHiderKey", function()
-	if not ChatHider.Enabled then
-		return
-	end
-	ChatHider.Apply(ChatHider.Hidden)
-end)
-
-GeneralCustomizationLeft:AddDivider()
 GeneralCustomizationLeft:AddLabel("Xbox Mode")
 
 GeneralCustomizationLeft:AddToggle("EnableXboxMode", {
 	Text = "Enable Xbox Mode",
 	Default = false,
 	Callback = function(Value)
-		if Value then
-			StartXboxMode()
-		else
-			StopXboxMode()
-		end
+		XboxMode_RequestState(Value)
 	end,
 })
 
@@ -10448,6 +10529,68 @@ ShaderSettings1:AddDropdown("ShaderPreset", {
 })
 
 ShaderSettings1:AddDivider()
+
+-- ============================================================
+-- BOOST GAME (script FPS Optimizer: reduce procesamiento grafico innecesario)
+-- Hace exactamente lo del script original; al apagarlo restaura los valores anteriores.
+-- ============================================================
+BoostGame = { Saved = nil }
+
+function StartBoostGame()
+	if BoostGame.Saved then
+		return
+	end
+	local saved = {
+		Shadows = Lighting.GlobalShadows,
+		FogEnd = Lighting.FogEnd,
+		Effects = {},
+	}
+	BoostGame.Saved = saved
+
+	-- Reduce procesamiento grafico innecesario
+	pcall(function()
+		Lighting.GlobalShadows = false
+		Lighting.FogEnd = 9e9
+
+		for _, child in ipairs(Lighting:GetChildren()) do
+			if child:IsA("PostEffect") or child:IsA("Atmosphere") or child:IsA("Sky") then
+				saved.Effects[#saved.Effects + 1] = { child, child.Enabled }
+				child.Enabled = false
+			end
+		end
+	end)
+end
+
+function StopBoostGame()
+	local saved = BoostGame.Saved
+	if not saved then
+		return
+	end
+	BoostGame.Saved = nil
+	pcall(function()
+		Lighting.GlobalShadows = saved.Shadows
+		Lighting.FogEnd = saved.FogEnd
+	end)
+	for _, entry in ipairs(saved.Effects) do
+		pcall(function()
+			if entry[1] and entry[1].Parent then
+				entry[1].Enabled = entry[2]
+			end
+		end)
+	end
+end
+
+ShaderSettings1:AddToggle("BoostGame", {
+	Text = "Boost Game",
+	Default = false,
+	Callback = function(Value)
+		if Value then
+			StartBoostGame()
+		else
+			StopBoostGame()
+		end
+	end,
+})
 
 ShaderSettings1:AddToggle("ColorCorrection", {
 	Text = "Color Correction",
@@ -10841,14 +10984,15 @@ function FullCleanup()
 	end
 	GreyAvatarSettings = nil
 
+	if BoostGame and BoostGame.Saved then
+		StopBoostGame()
+	end
+	BoostGame = nil
+
 	if XboxMode and XboxMode.Enabled then
 		StopXboxMode()
 	end
 	XboxMode = nil
-
-	if ChatHider and ChatHider.Enabled then
-		ChatHider.Apply(true)
-	end
 
 	if BlackFogGammaSettings and BlackFogGammaSettings.Enabled then
 		StopBlackFogGamma()
